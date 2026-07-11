@@ -22,7 +22,7 @@ This appends a `Signed-off-by` line to your commit message. Make sure the name a
 
 ### Prerequisites
 
-- [Go](https://go.dev/dl/) `1.26.3`
+- [Go](https://go.dev/dl/) `1.26.5`
 - [Task](https://taskfile.dev/installation/) — used for all build, lint, and test automation
 - [Docker](https://docs.docker.com/get-docker/) and Docker Compose — required for local development and E2E tests
 
@@ -54,9 +54,9 @@ go run cmd/harbor-satellite/main.go --token "<token>" --ground-control-url "http
 go run cmd/ground-control/main.go
 ```
 
-For Ground Control local setup, copy `.env.example` to `.env` and fill in the required values. See [ground-control/README.md](ground-control/README.md) for details.
+For Ground Control local setup, copy `.env.example` to `.env` and fill in the required values.
 
-For satellite quickstart instructions, refer to [QUICKSTART.md](QUICKSTART.md).
+For satellite quickstart instructions, refer to [website/content/docs/quickstart.md](website/content/docs/quickstart.md).
 
 ## How to Contribute
 
