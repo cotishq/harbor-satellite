@@ -17,6 +17,20 @@ jobs:
       id-token: write
     runs-on: container-registry
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux/amd64
+            arch_suffix: amd64
+          - platform: linux/arm64
+            arch_suffix: arm64
+          - platform: linux/ppc64le
+            arch_suffix: ppc64le
+          - platform: linux/s390x
+            arch_suffix: s390x
+          - platform: linux/riscv64
+            arch_suffix: riscv64
     steps:
       - name: Print GitHub ref for debugging
         run: |
@@ -28,11 +42,42 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Publish and Sign Snapshot Image
+      - name: Publish Snapshot Platform Image
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main')
         uses: ./.github/actions/publish-and-sign
         with:
           IMAGE_TAGS: latest
+          SOURCE_IMAGE_TAGS: latest-${{ github.sha }}
+          PUBLISH_MODE: platform
+          PLATFORM: ${{ matrix.platform }}
+          ARCH_SUFFIX: ${{ matrix.arch_suffix }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+          REGISTRY_ADDRESS: ${{ vars.REGISTRY_ADDRESS }}
+          REGISTRY_USERNAME: ${{ vars.REGISTRY_USERNAME }}
+          PROJECT_NAME: ${{ vars.PROJECT_NAME }}
+
+  create-latest-manifest:
+    needs: push-latest-images
+    permissions:
+      contents: read
+      id-token: write
+    runs-on: container-registry
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Create and Sign Snapshot Manifest
+        uses: ./.github/actions/publish-and-sign
+        with:
+          IMAGE_TAGS: latest
+          SOURCE_IMAGE_TAGS: latest-${{ github.sha }}
+          PUBLISH_MODE: manifest
+          ARCH_SUFFIXES: amd64 arm64 ppc64le s390x riscv64
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
           REGISTRY_ADDRESS: ${{ vars.REGISTRY_ADDRESS }}
