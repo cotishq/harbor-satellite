@@ -11,6 +11,7 @@ import (
 	"github.com/container-registry/harbor-satellite/internal/logger"
 	"github.com/container-registry/harbor-satellite/internal/spiffe"
 	"github.com/container-registry/harbor-satellite/pkg/config"
+	"github.com/container-registry/harbor-satellite/pkg/version"
 	"github.com/rs/zerolog"
 )
 
@@ -113,6 +114,7 @@ func (s *SpiffeZtrProcess) registerWithSPIFFE(ctx context.Context, log *zerolog.
 	if err != nil {
 		return config.StateConfig{}, fmt.Errorf("create request: %w", err)
 	}
+	req.Header.Set(version.HeaderName, version.Current())
 
 	log.Debug().Str("url", ztrURL).Msg("Sending SPIFFE-authenticated ZTR request")
 	resp, err := httpClient.Do(req)

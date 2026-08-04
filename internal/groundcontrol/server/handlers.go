@@ -3,6 +3,8 @@ package server
 import (
 	"log"
 	"net/http"
+
+	"github.com/container-registry/harbor-satellite/pkg/version"
 )
 
 const (
@@ -19,9 +21,18 @@ func (s *Server) Health(w http.ResponseWriter, _ *http.Request) {
 	err := s.db.Ping()
 	if err != nil {
 		log.Printf("error pinging db: %v", err)
-		WriteJSONResponse(w, http.StatusServiceUnavailable, HealthResponse{Status: Unhealthy})
+		WriteJSONResponse(w, http.StatusServiceUnavailable, healthResponse(string(Unhealthy)))
 		return
 	}
 
-	WriteJSONResponse(w, http.StatusOK, HealthResponse{Status: Healthy})
+	WriteJSONResponse(w, http.StatusOK, healthResponse(string(Healthy)))
+}
+
+func healthResponse(status string) HealthResponse {
+	info := version.BuildInfo()
+	return HealthResponse{
+		Status:    HealthResponseStatus(status),
+		Version:   info.Version,
+		GitCommit: info.GitCommit,
+	}
 }

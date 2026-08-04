@@ -1690,14 +1690,21 @@ components:
           format: date-time
     HealthResponse:
       type: object
-      title: HealthResponse contains the database health state.
+      title: HealthResponse contains the service health and build version.
       properties:
+        git_commit:
+          type: string
+          x-go-name: GitCommit
         status:
           type: string
           enum:
             - healthy
             - unhealthy
           x-go-name: Status
+        version:
+          type: string
+          example: 1.2.3
+          x-go-name: Version
     MessageResponse:
       type: object
       title: MessageResponse contains a human-readable operation result.
@@ -2345,6 +2352,10 @@ components:
           format: int64
           minimum: 0
           x-go-name: StorageUsedBytes
+        version:
+          type: string
+          example: 1.2.3
+          x-go-name: Version
     GroupSyncRequest:
       type: object
       title: GroupSyncRequest contains a group state artifact synchronized from

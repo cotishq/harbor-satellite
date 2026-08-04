@@ -3,6 +3,8 @@ package env
 import (
 	"testing"
 	"time"
+
+	"github.com/container-registry/harbor-satellite/pkg/version"
 )
 
 func TestLoadParsesGroundControlEnvironment(t *testing.T) {
@@ -16,6 +18,7 @@ func TestLoadParsesGroundControlEnvironment(t *testing.T) {
 	t.Setenv("HARBOR_PASSWORD", "robot-secret")
 	t.Setenv("PORT", "8080")
 	t.Setenv("SESSION_DURATION", "12h")
+	t.Setenv("COMPATIBILITY_MAX_MINOR_SKEW", "3")
 	t.Setenv("SPIFFE_SERVER_ENABLED", "true")
 	t.Setenv("SPIFFE_PROVIDER", "static")
 	t.Setenv("SPIRE_SERVER_PORT", "9090")
@@ -36,6 +39,9 @@ func TestLoadParsesGroundControlEnvironment(t *testing.T) {
 	}
 	if cfg.Server.Port != 8080 || cfg.Server.SessionDuration != 12*time.Hour {
 		t.Fatalf("server env was not parsed: %+v", cfg.Server)
+	}
+	if cfg.Compatibility.MaxMinorSkew != 3 {
+		t.Fatalf("compatibility env was not parsed: %+v", cfg.Compatibility)
 	}
 	if !cfg.SPIFFE.Enabled || cfg.SPIFFE.Provider != "static" {
 		t.Fatalf("spiffe env was not parsed: %+v", cfg.SPIFFE)
@@ -60,6 +66,9 @@ func TestLoadAppliesDefaults(t *testing.T) {
 	if cfg.Server.Port != 8080 {
 		t.Fatalf("server port default = %d, want 8080", cfg.Server.Port)
 	}
+	if cfg.Compatibility.MaxMinorSkew != version.DefaultMaxMinorSkew {
+		t.Fatalf("compatibility max minor skew default = %d, want %d", cfg.Compatibility.MaxMinorSkew, version.DefaultMaxMinorSkew)
+	}
 	if cfg.SPIFFE.TrustDomain != "harbor-satellite.local" {
 		t.Fatalf("SPIFFE trust domain default = %q", cfg.SPIFFE.TrustDomain)
 	}
@@ -68,6 +77,13 @@ func TestLoadAppliesDefaults(t *testing.T) {
 	}
 	if got := cfg.Harbor.RobotDurationDaysValue(); got != 30 {
 		t.Fatalf("RobotDurationDaysValue() = %d, want 30", got)
+	}
+
+	if err := LoadSatellite(); err != nil {
+		t.Fatalf("LoadSatellite() error = %v", err)
+	}
+	if Satellite.HealthPort != 8082 {
+		t.Fatalf("satellite health port default = %d, want 8082", Satellite.HealthPort)
 	}
 }
 
@@ -82,6 +98,7 @@ func TestLoadSatelliteParsesEnvironment(t *testing.T) {
 	t.Setenv("REGISTRY_PASSWORD", "secret")
 	t.Setenv("CONFIG_DIR", "/tmp/satellite-config")
 	t.Setenv("REGISTRY_DATA_DIR", "/tmp/registry")
+	t.Setenv("HEALTH_PORT", "9091")
 	t.Setenv("SHUTDOWN_TIMEOUT", "45s")
 	t.Setenv("NO_REGISTRY_FALLBACK", "true")
 	t.Setenv("HARBOR_REGISTRY_URL", "https://harbor.example")
@@ -101,5 +118,8 @@ func TestLoadSatelliteParsesEnvironment(t *testing.T) {
 	}
 	if cfg.RegistryDataDir != "/tmp/registry" || cfg.ShutdownTimeout != "45s" {
 		t.Fatalf("satellite path/timing env was not parsed: %+v", cfg)
+	}
+	if cfg.HealthPort != 9091 {
+		t.Fatalf("satellite health port env was not parsed: %+v", cfg)
 	}
 }

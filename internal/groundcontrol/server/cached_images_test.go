@@ -12,6 +12,7 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/container-registry/harbor-satellite/internal/groundcontrol/database"
+	"github.com/container-registry/harbor-satellite/pkg/version"
 	"github.com/gorilla/mux"
 	"github.com/lib/pq"
 	"github.com/stretchr/testify/require"
@@ -29,8 +30,9 @@ func newMockServer(t *testing.T) (*Server, sqlmock.Sqlmock) {
 	})
 
 	return &Server{
-		db:        db,
-		dbQueries: database.New(db),
+		db:           db,
+		dbQueries:    database.New(db),
+		maxMinorSkew: 2,
 	}, mock
 }
 
@@ -85,6 +87,7 @@ func TestSyncHandler_WithCachedImages(t *testing.T) {
 
 	reqBody := SatelliteStatusRequest{
 		Name:               "edge-01",
+		Version:            "0.0.0",
 		ImageCount:         2,
 		RequestCreatedTime: now,
 		CachedImages: []CachedImageReport{
@@ -129,6 +132,7 @@ func TestSyncHandler_NoCachedImages(t *testing.T) {
 
 	reqBody := SatelliteStatusRequest{
 		Name:               "edge-01",
+		Version:            "0.0.0",
 		RequestCreatedTime: now,
 	}
 	body := mustMarshalJSON(t, reqBody)
@@ -151,6 +155,7 @@ func TestSyncHandler_UnknownSatellite(t *testing.T) {
 
 	reqBody := SatelliteStatusRequest{
 		Name:               "unknown",
+		Version:            "0.0.0",
 		RequestCreatedTime: time.Now().UTC(),
 	}
 	body := mustMarshalJSON(t, reqBody)
@@ -161,6 +166,32 @@ func TestSyncHandler_UnknownSatellite(t *testing.T) {
 	server.SyncSatellite(rr, req)
 
 	require.Equal(t, http.StatusForbidden, rr.Code)
+	require.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestSyncHandler_IncompatibleSatelliteVersion(t *testing.T) {
+	server, mock := newMockServer(t)
+
+	originalVersion := version.Version
+	version.Version = "2.4.0"
+	t.Cleanup(func() {
+		version.Version = originalVersion
+	})
+
+	reqBody := SatelliteStatusRequest{
+		Name:               "edge-01",
+		Version:            "1.4.0",
+		RequestCreatedTime: time.Now().UTC(),
+	}
+	body := mustMarshalJSON(t, reqBody)
+	req := httptest.NewRequest(http.MethodPost, "/satellites/sync", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+
+	rr := httptest.NewRecorder()
+	server.SyncSatellite(rr, req)
+
+	require.Equal(t, http.StatusBadRequest, rr.Code)
+	require.Contains(t, rr.Body.String(), "major versions must match")
 	require.NoError(t, mock.ExpectationsWereMet())
 }
 
@@ -277,6 +308,7 @@ func TestSyncHandler_InvalidHeartbeatInterval(t *testing.T) {
 
 	reqBody := SatelliteStatusRequest{
 		Name:                "edge-01",
+		Version:             "0.0.0",
 		StateReportInterval: "bad-format",
 		RequestCreatedTime:  now,
 	}
@@ -311,6 +343,7 @@ func TestSyncHandler_BatchInsertArtifactsFails(t *testing.T) {
 
 	reqBody := SatelliteStatusRequest{
 		Name:               "edge-01",
+		Version:            "0.0.0",
 		RequestCreatedTime: now,
 		CachedImages: []CachedImageReport{
 			{Reference: "localhost:8585/nginx:latest@sha256:abc", SizeBytes: 50000},
@@ -355,6 +388,7 @@ func TestGetCachedImagesHandler_DBFailure(t *testing.T) {
 func TestCachedImageJSON(t *testing.T) {
 	t.Run("serialization roundtrip", func(t *testing.T) {
 		original := SatelliteStatusRequest{
+			Version:    "0.0.0",
 			Name:       "edge-01",
 			ImageCount: 2,
 			CachedImages: []CachedImageReport{
@@ -381,6 +415,7 @@ func TestCachedImageJSON(t *testing.T) {
 
 	t.Run("omits cached_images when empty", func(t *testing.T) {
 		original := SatelliteStatusRequest{
+			Version:    "0.0.0",
 			Name:       "edge-01",
 			ImageCount: 0,
 		}

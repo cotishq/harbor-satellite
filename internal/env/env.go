@@ -14,6 +14,7 @@ func LoadGC() error {
 	if err := envparser.Parse(&cfg); err != nil {
 		return err
 	}
+	cfg.Compatibility = cfg.Compatibility.ApplyDefaults()
 	GC = cfg
 	return nil
 }

@@ -3,11 +3,14 @@ package env
 import (
 	"strconv"
 	"time"
+
+	"github.com/container-registry/harbor-satellite/pkg/version"
 )
 
 type GroundControl struct {
 	Harbor         Harbor
 	Server         Server
+	Compatibility  Compatibility `envPrefix:"COMPATIBILITY_"`
 	EmbeddedSPIRE  EmbeddedSPIRE
 	Database       Database       `envPrefix:"DB_"`
 	PasswordPolicy PasswordPolicy `envPrefix:"PASSWORD_"`
@@ -47,6 +50,17 @@ type Server struct {
 	SessionDuration time.Duration `env:"SESSION_DURATION" envDefault:"24h"`
 	LockoutDuration time.Duration `env:"LOCKOUT_DURATION" envDefault:"5m"`
 	StaleThreshold  time.Duration `env:"STALE_THRESHOLD"  envDefault:"1h"`
+}
+
+type Compatibility struct {
+	MaxMinorSkew uint64 `env:"MAX_MINOR_SKEW"`
+}
+
+func (c Compatibility) ApplyDefaults() Compatibility {
+	if c.MaxMinorSkew == 0 {
+		c.MaxMinorSkew = version.DefaultMaxMinorSkew
+	}
+	return c
 }
 
 type PasswordPolicy struct {

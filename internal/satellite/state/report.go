@@ -17,6 +17,7 @@ import (
 
 type StatusReportParams struct {
 	Name                string        `json:"name"`
+	Version             string        `json:"version"`
 	Activity            string        `json:"activity"`
 	StateReportInterval string        `json:"state_report_interval"`
 	LatestStateDigest   string        `json:"latest_state_digest"`

@@ -17,6 +17,7 @@ type HarborSatellite struct {
 	RegistryPassword       string `env:"REGISTRY_PASSWORD"`
 	ConfigDir              string `env:"CONFIG_DIR"`
 	RegistryDataDir        string `env:"REGISTRY_DATA_DIR"`
+	HealthPort             int    `env:"HEALTH_PORT"               envDefault:"8082"`
 	ShutdownTimeout        string `env:"SHUTDOWN_TIMEOUT"          envDefault:"30s"`
 	NoRegistryFallback     bool   `env:"NO_REGISTRY_FALLBACK"      envDefault:"false"`
 	HarborRegistryURL      string `env:"HARBOR_REGISTRY_URL"`

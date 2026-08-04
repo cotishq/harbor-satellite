@@ -15,6 +15,7 @@ import (
 	"github.com/container-registry/harbor-satellite/internal/spiffe"
 	"github.com/container-registry/harbor-satellite/internal/utils"
 	"github.com/container-registry/harbor-satellite/pkg/config"
+	"github.com/container-registry/harbor-satellite/pkg/version"
 )
 
 const StatusReportRoute = "satellites/sync"
@@ -87,6 +88,7 @@ func (s *StatusReportingProcess) Execute(ctx context.Context) error {
 
 	req := &StatusReportParams{
 		Name:                satelliteName,
+		Version:             version.Current(),
 		StateReportInterval: heartbeatExpr,
 		RequestCreatedTime:  time.Now().UTC(),
 	}

@@ -14,6 +14,7 @@ import (
 	"github.com/container-registry/harbor-satellite/internal/logger"
 	satTLS "github.com/container-registry/harbor-satellite/internal/satellite/tls"
 	"github.com/container-registry/harbor-satellite/pkg/config"
+	"github.com/container-registry/harbor-satellite/pkg/version"
 	"github.com/rs/zerolog"
 )
 
@@ -216,6 +217,7 @@ func registerSatellite(groundControlURL, path, token string, tlsCfg config.TLSCo
 		return config.StateConfig{}, fmt.Errorf("failed to create request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(version.HeaderName, version.Current())
 	response, err := client.Do(req)
 	if err != nil {
 		return config.StateConfig{}, fmt.Errorf("failed to send request: %w", err)

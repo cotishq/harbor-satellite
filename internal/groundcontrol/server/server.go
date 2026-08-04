@@ -44,6 +44,9 @@ type Server struct {
 	// Satellite status
 	staleThreshold time.Duration
 
+	// Satellite compatibility
+	maxMinorSkew uint64
+
 	// Audit logger for security events
 	audit *auditlog.AuditLogger
 
@@ -168,6 +171,9 @@ func NewServer() *ServerResult {
 
 		// Satellite status
 		staleThreshold: cfg.Server.StaleThreshold,
+
+		// Satellite compatibility
+		maxMinorSkew: cfg.Compatibility.MaxMinorSkew,
 
 		// Audit logger
 		audit:                 auditLogger,

@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/container-registry/harbor-satellite/pkg/config"
+	"github.com/container-registry/harbor-satellite/pkg/version"
 	"github.com/stretchr/testify/require"
 )
 
@@ -61,4 +62,19 @@ func TestSanitizeAuditReason_TokenAppearsMultipleTimes(t *testing.T) {
 	got := sanitizeAuditReason(err, token)
 	require.Equal(t, 2, strings.Count(got, "[REDACTED]"))
 	require.NotContains(t, got, token)
+}
+
+func TestRegisterSatelliteSendsVersionHeader(t *testing.T) {
+	var gotVersion string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotVersion = r.Header.Get(version.HeaderName)
+		w.Header().Set("Content-Type", "application/json")
+		_, err := w.Write([]byte(`{"state":"http://registry/satellite/satellite-state/edge-01/state:latest","auth":{"url":"http://harbor","username":"robot","password":"secret"}}`))
+		require.NoError(t, err)
+	}))
+	defer srv.Close()
+
+	_, err := registerSatellite(srv.URL, ZeroTouchRegistrationRoute, "token", config.TLSConfig{}, true, testContext())
+	require.NoError(t, err)
+	require.Equal(t, "0.0.0", gotVersion)
 }

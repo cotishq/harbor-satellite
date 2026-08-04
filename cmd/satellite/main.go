@@ -3,9 +3,11 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"time"
 
@@ -18,6 +20,7 @@ import (
 	"github.com/container-registry/harbor-satellite/internal/satellite/watcher"
 	"github.com/container-registry/harbor-satellite/internal/utils"
 	"github.com/container-registry/harbor-satellite/pkg/config"
+	"github.com/container-registry/harbor-satellite/pkg/version"
 
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog"
@@ -53,6 +56,7 @@ type SatelliteOptions struct {
 	RegistryPassword       string
 	ConfigDir              string
 	RegistryDataDir        string
+	HealthPort             int
 	NoRegistryFallback     bool
 	FallbackOnly           bool
 	HarborRegistryURL      string
@@ -79,6 +83,7 @@ func main() {
 		RegistryUsername:       envCfg.RegistryUsername,
 		ConfigDir:              envCfg.ConfigDir,
 		RegistryDataDir:        envCfg.RegistryDataDir,
+		HealthPort:             envCfg.HealthPort,
 		NoRegistryFallback:     envCfg.NoRegistryFallback,
 		HarborRegistryURL:      envCfg.HarborRegistryURL,
 		DirectDelivery:         envCfg.DirectDelivery,
@@ -100,6 +105,7 @@ func main() {
 	flag.StringVar(&opts.RegistryPassword, "registry-password", "", "External registry password")
 	flag.StringVar(&opts.ConfigDir, "config-dir", opts.ConfigDir, "Configuration directory path (default: ~/.config/satellite)")
 	flag.StringVar(&opts.RegistryDataDir, "registry-data-dir", opts.RegistryDataDir, "Registry data directory (overrides default storage path derived from config-dir)")
+	flag.IntVar(&opts.HealthPort, "health-port", opts.HealthPort, "Satellite health endpoint port. Set to 0 to disable")
 	flag.StringVar(&shutdownTimeout, "shutdown-timeout", shutdownTimeout, "Graceful shutdown timeout (e.g., '30s'). Defaults to SHUTDOWN_TIMEOUT env var or 30s")
 	flag.BoolVar(&opts.NoRegistryFallback, "no-registry-fallback", opts.NoRegistryFallback, "Disable all CRI registry fallback configuration")
 	flag.BoolVar(&opts.FallbackOnly, "fallback-only", false, "Apply CRI registry fallback configs and exit without starting satellite")
@@ -378,6 +384,10 @@ func run(opts SatelliteOptions, pathConfig *config.PathConfig, shutdownTimeout s
 	// Handle registry setup
 	wg.Go(func() error { return handleRegistrySetup(ctx, log, cm, pathConfig) })
 
+	if opts.HealthPort > 0 {
+		wg.Go(func() error { return startHealthServer(ctx, opts.HealthPort, log) })
+	}
+
 	// Watch for changes in the config file
 	wg.Go(func() error {
 		return watcher.WatchChanges(ctx, log.With().Str("component", "file watcher").Logger(), pathConfig.ConfigFile, eventChan)
@@ -432,6 +442,52 @@ func run(opts SatelliteOptions, pathConfig *config.PathConfig, shutdownTimeout s
 	}
 
 	return gracefulShutdown(ctx, log, s, wg, shutdownTimeout)
+}
+
+func startHealthServer(ctx context.Context, port int, log *zerolog.Logger) error {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(healthResponse("healthy")); err != nil {
+			log.Warn().Err(err).Msg("Failed to write health response")
+		}
+	})
+
+	server := &http.Server{
+		Addr:              fmt.Sprintf(":%d", port),
+		Handler:           mux,
+		ReadHeaderTimeout: 5 * time.Second,
+	}
+
+	go func() {
+		<-ctx.Done()
+		shutdownCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+		defer cancel()
+		if err := server.Shutdown(shutdownCtx); err != nil {
+			log.Warn().Err(err).Msg("Failed to shut down health server")
+		}
+	}()
+
+	log.Info().Int("port", port).Msg("Starting satellite health server")
+	if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		return fmt.Errorf("health server: %w", err)
+	}
+
+	return nil
+}
+
+func healthResponse(status string) map[string]string {
+	info := version.BuildInfo()
+	return map[string]string{
+		"status":     status,
+		"version":    info.Version,
+		"git_commit": info.GitCommit,
+	}
 }
 
 func gracefulShutdown(ctx context.Context, log *zerolog.Logger, s *satellite.Satellite, wg *errgroup.Group, shutdownTimeout string) error {

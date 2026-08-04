@@ -12,8 +12,8 @@ builds:
     env:
       - CGO_ENABLED=0
     ldflags:
-      - -w -s -X github.com/container-registry/harbor-satellite/internal/version.GitCommit={{.FullCommit}}
-      - -X github.com/container-registry/harbor-satellite/internal/version.Version={{.Tag}}
+      - -w -s -X github.com/container-registry/harbor-satellite/pkg/version.GitCommit={{.FullCommit}}
+      - -X github.com/container-registry/harbor-satellite/pkg/version.Version={{.Tag}}
     goos:
       - linux
       - darwin
@@ -59,8 +59,8 @@ builds:
     env:
       - CGO_ENABLED=0
     ldflags:
-      - -w -s -X github.com/container-registry/harbor-satellite/internal/version.GitCommit={{.FullCommit}}
-      - -X github.com/container-registry/harbor-satellite/internal/version.Version={{.Tag}}
+      - -w -s -X github.com/container-registry/harbor-satellite/pkg/version.GitCommit={{.FullCommit}}
+      - -X github.com/container-registry/harbor-satellite/pkg/version.Version={{.Tag}}
     goos:
       - linux
       - darwin
@@ -106,8 +106,8 @@ builds:
     env:
       - CGO_ENABLED=0
     ldflags:
-      - -w -s -X github.com/container-registry/harbor-satellite/internal/version.GitCommit={{.FullCommit}}
-      - -X github.com/container-registry/harbor-satellite/internal/version.Version={{.Tag}}
+      - -w -s -X github.com/container-registry/harbor-satellite/pkg/version.GitCommit={{.FullCommit}}
+      - -X github.com/container-registry/harbor-satellite/pkg/version.Version={{.Tag}}
     goos:
       - linux
       - darwin

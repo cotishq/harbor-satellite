@@ -21,6 +21,14 @@ func newTestConfigManager(t *testing.T, cfg *config.Config) *config.ConfigManage
 	return cm
 }
 
+func TestHealthResponseIncludesVersion(t *testing.T) {
+	resp := healthResponse("healthy")
+
+	require.Equal(t, "healthy", resp["status"])
+	require.Equal(t, "0.0.0", resp["version"])
+	require.Equal(t, "unknown", resp["git_commit"])
+}
+
 func TestResolveLocalRegistryEndpoint_BYO(t *testing.T) {
 	tests := []struct {
 		name     string

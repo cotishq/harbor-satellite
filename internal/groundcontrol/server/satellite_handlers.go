@@ -14,6 +14,7 @@ import (
 	auditlog "github.com/container-registry/harbor-satellite/internal/groundcontrol/logger"
 	"github.com/container-registry/harbor-satellite/internal/groundcontrol/spiffe"
 	"github.com/container-registry/harbor-satellite/internal/groundcontrol/utils"
+	"github.com/container-registry/harbor-satellite/pkg/version"
 )
 
 func (s *Server) RegisterSatellite(w http.ResponseWriter, r *http.Request) {
@@ -246,6 +247,10 @@ func (s *Server) RegisterSatellite(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) Ztr(w http.ResponseWriter, r *http.Request) {
+	if !s.isSatelliteVersionCompatible(w, r.Header.Get(version.HeaderName)) {
+		return
+	}
+
 	var request ZTRRequest
 	if err := DecodeRequestBody(r, &request); err != nil {
 		HandleAppError(w, err)
@@ -403,6 +408,10 @@ func (s *Server) Ztr(w http.ResponseWriter, r *http.Request) {
 // The satellite's identity is extracted from the TLS client certificate (SVID).
 // This eliminates the need for single-use tokens.
 func (s *Server) SpiffeZtr(w http.ResponseWriter, r *http.Request) {
+	if !s.isSatelliteVersionCompatible(w, r.Header.Get(version.HeaderName)) {
+		return
+	}
+
 	// Extract SPIFFE ID from the TLS connection
 	satelliteName, ok := spiffe.GetSatelliteName(r.Context())
 	if !ok {
@@ -607,6 +616,10 @@ func (s *Server) SyncSatellite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !s.isSatelliteVersionCompatible(w, req.Version) {
+		return
+	}
+
 	// Check SPIFFE identity first for dual auth
 	var satelliteName string
 	if name, ok := spiffe.GetSatelliteName(r.Context()); ok {
@@ -695,6 +708,18 @@ func (s *Server) SyncSatellite(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+func (s *Server) isSatelliteVersionCompatible(w http.ResponseWriter, satelliteVersion string) bool {
+	if err := version.Compatible(version.Version, satelliteVersion, s.maxMinorSkew); err != nil {
+		HandleAppError(w, &AppError{
+			Message: err.Error(),
+			Code:    http.StatusBadRequest,
+		})
+		return false
+	}
+
+	return true
 }
 
 func (s *Server) GetSatelliteStatus(w http.ResponseWriter, r *http.Request, satelliteName string) {

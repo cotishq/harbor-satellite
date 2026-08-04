@@ -271,7 +271,11 @@ type GroupSyncRequest struct {
 
 // HealthResponse defines model for HealthResponse.
 type HealthResponse struct {
-	Status HealthResponseStatus `json:"status,omitempty,omitzero"`
+	GitCommit string               `json:"git_commit,omitempty,omitzero"`
+	Status    HealthResponseStatus `json:"status,omitempty,omitzero"`
+
+	// Version Example: 1.2.3
+	Version string `json:"version,omitempty,omitzero"`
 }
 
 // HealthResponseStatus defines model for HealthResponse.Status.
@@ -428,6 +432,9 @@ type SatelliteStatusRequest struct {
 	RequestCreatedTime  time.Time           `json:"request_created_time,omitempty,omitzero"`
 	StateReportInterval string              `json:"state_report_interval,omitempty,omitzero"`
 	StorageUsedBytes    int64               `json:"storage_used_bytes,omitempty,omitzero"`
+
+	// Version Example: 1.2.3
+	Version string `json:"version,omitempty,omitzero"`
 }
 
 // SatelliteStatusResponse defines model for SatelliteStatusResponse.

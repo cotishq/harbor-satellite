@@ -162,6 +162,7 @@ func TestExecute_CRIReporting(t *testing.T) {
 		err := p.Execute(ctx)
 		require.NoError(t, err)
 
+		require.Equal(t, "0.0.0", received.Version)
 		require.Contains(t, received.Activity, "docker(ok")
 
 		p.mu.Lock()
