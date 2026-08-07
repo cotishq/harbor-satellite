@@ -240,6 +240,21 @@ tasks:
           SOURCE_IMAGE_TAGS: "{{.SOURCE_TAGS}}"
           ARCH_SUFFIXES: "{{.ARCH_SUFFIXES}}"
 
+  cleanup-platform-tags:
+    desc: Delete temporary per-arch source tags from the registry after manifest assembly
+    vars:
+      REGISTRY: "{{.REGISTRY | default .Env.REGISTRY}}"
+      PROJECT_NAME: "{{.PROJECT_NAME | default .Env.PROJECT_NAME}}"
+      SOURCE_TAGS: "{{.SOURCE_IMAGE_TAGS | default .Env.SOURCE_IMAGE_TAGS}}"
+      ARCH_SUFFIXES: "{{.ARCH_SUFFIXES | default .Env.ARCH_SUFFIXES}}"
+    cmds:
+      - task: _publish:cleanup-platform-tags
+        vars:
+          REGISTRY: "{{.REGISTRY}}"
+          PROJECT_NAME: "{{.PROJECT_NAME}}"
+          SOURCE_IMAGE_TAGS: "{{.SOURCE_TAGS}}"
+          ARCH_SUFFIXES: "{{.ARCH_SUFFIXES}}"
+
   release:
     desc: Create release with GoReleaser
     cmds:

@@ -221,6 +221,55 @@ tasks:
       - echo "Created and signed {{.COMPONENT}} manifest"
     silent: true
 
+  cleanup-platform-tags:
+    desc: Delete temporary per-arch source tags from Harbor after manifest assembly
+    vars:
+      REGISTRY: "{{.REGISTRY | default .Env.REGISTRY}}"
+      PROJECT_NAME: "{{.PROJECT_NAME | default .Env.PROJECT_NAME}}"
+      SOURCE_IMAGE_TAGS: "{{.SOURCE_IMAGE_TAGS | default .Env.SOURCE_IMAGE_TAGS}}"
+      ARCH_SUFFIXES: "{{.ARCH_SUFFIXES | default .Env.ARCH_SUFFIXES}}"
+    preconditions:
+      - sh: test -n "{{.REGISTRY}}"
+        msg: "REGISTRY is required. Set via task var or REGISTRY env var."
+      - sh: test -n "{{.PROJECT_NAME}}"
+        msg: "PROJECT_NAME is required. Set via task var or PROJECT_NAME env var."
+      - sh: test -n "{{.SOURCE_IMAGE_TAGS}}"
+        msg: "SOURCE_IMAGE_TAGS is required."
+      - sh: test -n "{{.ARCH_SUFFIXES}}"
+        msg: "ARCH_SUFFIXES is required. Set via task var or ARCH_SUFFIXES env var."
+    cmds:
+      - |
+        set +e
+        failed=0
+        IFS=',' read -r -a source_tags_arr <<< "{{.SOURCE_IMAGE_TAGS}}"
+        for component in satellite ground-control; do
+          for suffix in {{.ARCH_SUFFIXES}}; do
+            for source_tag in "${source_tags_arr[@]}"; do
+              source_tag=$(echo "$source_tag" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+              [ -z "$source_tag" ] && continue
+              tag="${source_tag}-${suffix}"
+              url="https://{{.REGISTRY}}/api/v2.0/projects/{{.PROJECT_NAME}}/repositories/${component}/artifacts/${tag}/tags/${tag}"
+              echo "Removing temporary tag ${tag} from ${component}..."
+              http_code=$(curl -s -o /dev/null -w "%{http_code}" \
+                -X DELETE \
+                -u "$REG_USER:$REG_PASS" \
+                "$url")
+              case "$http_code" in
+                200|202|404) echo "  done (HTTP ${http_code})" ;;
+                *)
+                  echo "  warning: HTTP ${http_code} deleting ${component}:${tag}" >&2
+                  failed=1
+                  ;;
+              esac
+            done
+          done
+        done
+        if [ "$failed" -ne 0 ]; then
+          echo "Warning: some tag deletions returned unexpected status codes (see above)." >&2
+        fi
+        exit 0  # cleanup is best-effort; never block CI
+    silent: true
+
   snapshot-release:
     desc: Create snapshot release with GoReleaser
     cmds:
