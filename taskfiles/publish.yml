@@ -251,6 +251,8 @@ tasks:
               url="https://{{.REGISTRY}}/api/v2.0/projects/{{.PROJECT_NAME}}/repositories/${component}/artifacts/${tag}/tags/${tag}"
               echo "Removing temporary tag ${tag} from ${component}..."
               http_code=$(curl -s -o /dev/null -w "%{http_code}" \
+                --connect-timeout 10 \
+                --max-time 30 \
                 -X DELETE \
                 -u "$REG_USER:$REG_PASS" \
                 "$url")
