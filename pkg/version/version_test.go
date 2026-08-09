@@ -6,57 +6,59 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCompatible(t *testing.T) {
-	tests := []struct {
-		name             string
-		groundControl    string
-		satellite        string
-		maxMinorSkew     uint64
-		wantErrSubstring string
-	}{
-		{
-			name:          "same version",
-			groundControl: "1.2.3",
-			satellite:     "1.2.4",
-			maxMinorSkew:  2,
-		},
-		{
-			name:          "tag with v prefix",
-			groundControl: "v1.4.0",
-			satellite:     "1.2.0",
-			maxMinorSkew:  2,
-		},
-		{
-			name:             "major mismatch",
-			groundControl:    "2.1.0",
-			satellite:        "1.1.0",
-			maxMinorSkew:     2,
-			wantErrSubstring: "major versions must match",
-		},
-		{
-			name:             "minor skew too large",
-			groundControl:    "1.5.0",
-			satellite:        "1.2.0",
-			maxMinorSkew:     2,
-			wantErrSubstring: "minor versions differ by more than 2 release(s)",
-		},
-		{
-			name:             "missing satellite version",
-			groundControl:    "1.0.0",
-			satellite:        "",
-			maxMinorSkew:     2,
-			wantErrSubstring: "version is required",
-		},
-		{
-			name:             "invalid satellite version",
-			groundControl:    "1.0.0",
-			satellite:        "1.0",
-			maxMinorSkew:     2,
-			wantErrSubstring: "expected MAJOR.MINOR.PATCH",
-		},
-	}
+type compatibleCase struct {
+	name             string
+	groundControl    string
+	satellite        string
+	maxMinorSkew     uint64
+	wantErrSubstring string
+}
 
-	for _, tt := range tests {
+var compatibleCases = []compatibleCase{
+	{
+		name:          "same version",
+		groundControl: "1.2.3",
+		satellite:     "1.2.4",
+		maxMinorSkew:  2,
+	},
+	{
+		name:          "tag with v prefix",
+		groundControl: "v1.4.0",
+		satellite:     "1.2.0",
+		maxMinorSkew:  2,
+	},
+	{
+		name:             "major mismatch",
+		groundControl:    "2.1.0",
+		satellite:        "1.1.0",
+		maxMinorSkew:     2,
+		wantErrSubstring: "major versions must match",
+	},
+	{
+		name:             "minor skew too large",
+		groundControl:    "1.5.0",
+		satellite:        "1.2.0",
+		maxMinorSkew:     2,
+		wantErrSubstring: "minor versions differ by more than 2 release(s)",
+	},
+	{
+		name:             "missing satellite version",
+		groundControl:    "1.0.0",
+		satellite:        "",
+		maxMinorSkew:     2,
+		wantErrSubstring: "version is required",
+	},
+	{
+		name:             "invalid satellite version",
+		groundControl:    "1.0.0",
+		satellite:        "1.0",
+		maxMinorSkew:     2,
+		wantErrSubstring: "expected MAJOR.MINOR.PATCH",
+	},
+}
+
+func TestCompatible(t *testing.T) {
+	for _, tt := range compatibleCases {
 		t.Run(tt.name, func(t *testing.T) {
 			err := Compatible(tt.groundControl, tt.satellite, tt.maxMinorSkew)
 			if tt.wantErrSubstring == "" {
