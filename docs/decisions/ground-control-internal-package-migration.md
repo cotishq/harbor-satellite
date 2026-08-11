@@ -25,15 +25,12 @@ harbor-satellite/
 ├── internal/
 │   ├── satellite/
 │   ├── groundcontrol/
-│   ├── auth/
-│   ├── database/
-│   ├── harborhealth/
-│   ├── middleware/
-│   ├── models/
-│   ├── server/
-│   ├── spiffe/
-│   ├── logger/
-│   ├── crypto/
+│   ├── shared/
+│   │   ├── crypto/
+│   │   ├── env/
+│   │   ├── logger/
+│   │   ├── spiffe/
+│   │   └── utils/
 │   └── ...
 ├── pkg/
 └── go.mod
@@ -59,7 +56,7 @@ harbor-satellite/
 ### Phase 2: Refactor Satellite Internal Packages
 
 - [x] Move satellite-specific packages from `internal/*` into `internal/satellite/*`.
-- [x] Keep cross-cutting packages used by both binaries at the root of `internal`.
+- [x] Keep cross-cutting packages used by both binaries under `internal/shared/*`.
 - [x] Update satellite imports to use `github.com/container-registry/harbor-satellite/internal/satellite/...`.
 - [x] Run satellite package tests from the root module.
 
