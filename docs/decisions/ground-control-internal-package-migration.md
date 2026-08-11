@@ -45,7 +45,7 @@ harbor-satellite/
 - Move executable entrypoints into `cmd/<binary-name>/main.go`.
 - Keep `cmd` packages thin. They should only parse configuration, initialize dependencies, and call internal application code.
 - Prefer `internal/satellite` and `internal/groundcontrol` for binary-specific application logic.
-- Avoid a generic `internal/shared` package. Shared code should live in packages named after the behavior or domain they own, such as `internal/logger`, `internal/spiffe`, `internal/auth`, or `internal/database`.
+- Avoid a generic catch-all package under `internal/shared`. Shared code should live in packages named after the behavior or domain they own, such as `internal/shared/logger`, `internal/shared/spiffe`, `internal/auth`, or `internal/database`.
 - Keep code in `pkg` only when it is intentionally public and stable for external consumers. Code used only by repository binaries should live under `internal`.
 
 ## Migration Plan
