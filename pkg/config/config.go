@@ -212,9 +212,10 @@ type StateConfig struct {
 }
 
 type Config struct {
-	StateConfig  StateConfig     `json:"state_config,omitempty"`
-	AppConfig    AppConfig       `json:"app_config,omitempty"`
-	ZotConfigRaw json.RawMessage `json:"zot_config,omitempty"`
+	StateConfig      StateConfig            `json:"state_config,omitempty"`
+	AppConfig        AppConfig              `json:"app_config,omitempty"`
+	ZotConfigRaw     json.RawMessage        `json:"zot_config,omitempty"`
+	PeerDistribution PeerDistributionConfig `json:"peer_distribution,omitempty"`
 }
 
 var validLogLevels = map[string]bool{
@@ -224,4 +225,17 @@ var validLogLevels = map[string]bool{
 	zerolog.LevelErrorValue: true,
 	zerolog.LevelFatalValue: true,
 	zerolog.LevelPanicValue: true,
+}
+
+type PeerConfig struct {
+	URL string `json:"url,omitempty"`
+}
+
+type PeerDistributionConfig struct {
+	Enabled     bool         `json:"enabled,omitempty"`
+	Peers       []PeerConfig `json:"peers,omitempty"`
+	Timeout     string       `json:"timeout,omitempty"`
+	MaxAttempts int          `json:"max_attempts,omitempty"`
+	Backoff     string       `json:"backoff,omitempty"`
+	Concurrency int          `json:"concurrency,omitempty"`
 }

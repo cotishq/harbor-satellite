@@ -530,7 +530,12 @@ func (f *FetchAndReplicateStateProcess) setupReplication() (Replicator, string, 
 		}
 	}
 
-	replicator := NewBasicReplicator(srcUsername, srcPassword, sourceURL, remoteURL, remoteUsername, remotePassword, useUnsecure)
+	basicReplicator := NewBasicReplicator(srcUsername, srcPassword, sourceURL, remoteURL, remoteUsername, remotePassword, useUnsecure)
+
+	var replicator Replicator = basicReplicator
+	if peerCfg := f.cm.GetPeerDistributionConfig(); peerCfg.Enabled {
+		replicator = NewPeerReplicator(peerCfg, basicReplicator, remoteURL)
+	}
 
 	// Set up direct delivery if enabled, clear if disabled
 	dd := f.cm.GetDirectDeliveryConfig()

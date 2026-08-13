@@ -52,3 +52,7 @@ bin/
 website/public/
 website/resources/
 .hugo_build.lock
+zot-a.json
+zot-b.json
+zot-a-data/
+zot-b-data/
