@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	fmt.Println("=== Harbor Satellite P2P PoC ===")
+	fmt.Println("=== Harbor Satellite P2P ===")
 	fmt.Println("Satellite B (localhost:8587) will pull from Satellite A (localhost:8586)")
 	fmt.Println()
 
