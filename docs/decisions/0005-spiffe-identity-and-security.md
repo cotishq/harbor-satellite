@@ -439,8 +439,8 @@ sequenceDiagram
 ## Source Files
 
 - `internal/satellite/satellite.go:35-55` - ZTR path selection
-- `internal/state/spiffe_registration.go` - SPIFFE ZTR process
-- `internal/state/registration_process.go` - Token ZTR process
+- `internal/satellite/state/spiffe_registration.go` - SPIFFE ZTR process
+- `internal/satellite/state/registration_process.go` - Token ZTR process
 - `internal/shared/spiffe/client.go` - Workload API client
 - `internal/identity/device_linux.go` - Device fingerprinting
 - `internal/shared/crypto/aes_provider.go` - AES encryption
