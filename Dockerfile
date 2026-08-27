@@ -17,7 +17,12 @@ COPY . .
 # Pass --build-arg GO_TAGS=parsec to opt into the PARSEC code path.
 ARG GO_TAGS=""
 ARG COMPONENT=satellite
-RUN CGO_ENABLED=0 GOOS=linux go build -tags "${GO_TAGS}" -o /app-bin ./cmd/${COMPONENT}
+ARG PREBUILT_BINARY=""
+RUN if [ -n "$PREBUILT_BINARY" ]; then \
+      cp "$PREBUILT_BINARY" /app-bin; \
+    else \
+      CGO_ENABLED=0 GOOS=linux go build -tags "${GO_TAGS}" -o /app-bin ./cmd/${COMPONENT}; \
+    fi
 
 # Runtime stage
 FROM alpine:3.20
