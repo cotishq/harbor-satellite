@@ -130,6 +130,12 @@ runs:
         GC_BINARY: ${{ inputs.GC_BINARY_PATH }}
         ARCH: ${{ inputs.ARCH }}
       run: |
+        echo "Publish target: registry=$REGISTRY project=$PROJECT_NAME mode=$PUBLISH_MODE"
+        if [ "$REGISTRY" = "ghcr.io" ] && [[ "$PROJECT_NAME" != */* ]]; then
+          echo "For ghcr.io, PROJECT_NAME must include the owner, for example: ${GITHUB_REPOSITORY:-owner/repo}" >&2
+          exit 2
+        fi
+
         for attempt in 1 2 3; do
           case "$PUBLISH_MODE" in
             platform) publish_cmd=(task publish-platform) ;;
