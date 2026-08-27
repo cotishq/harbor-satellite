@@ -221,6 +221,9 @@ jobs:
           name: release-binaries-${{ matrix.arch }}
           path: bin/release
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
       - name: Publish Release Platform Image
         uses: ./.github/actions/publish-and-sign
         with:
