@@ -224,14 +224,6 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
-      - name: Print release image target
-        run: |
-          echo "REGISTRY_ADDRESS=${{ vars.REGISTRY_ADDRESS }}"
-          echo "REGISTRY_USERNAME=${{ vars.REGISTRY_USERNAME }}"
-          echo "PROJECT_NAME=${{ vars.PROJECT_NAME || github.repository }}"
-          echo "IMAGE_TAG=${{ github.ref_name }}"
-          echo "ARCH=${{ matrix.arch }}"
-
       - name: Publish Release Platform Image
         uses: ./.github/actions/publish-and-sign
         with:
