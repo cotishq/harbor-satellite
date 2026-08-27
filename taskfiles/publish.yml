@@ -323,6 +323,7 @@ tasks:
           TAG=$(echo "{{.IMAGE_TAG}}" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//;s/^v//')
           TAG="${TAG}-{{.ARCH}}"
           IMAGE_ADDR="{{.REGISTRY}}/{{.PROJECT_NAME}}/$COMPONENT:$TAG"
+          echo "Image target: $IMAGE_ADDR"
           echo "Building $COMPONENT for linux/{{.ARCH}} using pre-built binary..."
           cp "$BINARY" ./prebuilt-binary
           chmod +x ./prebuilt-binary
