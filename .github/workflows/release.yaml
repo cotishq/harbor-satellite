@@ -71,7 +71,7 @@ jobs:
           REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
           REGISTRY_ADDRESS: ${{ vars.REGISTRY_ADDRESS }}
           REGISTRY_USERNAME: ${{ vars.REGISTRY_USERNAME }}
-          PROJECT_NAME: ${{ vars.PROJECT_NAME }}
+          PROJECT_NAME: ${{ vars.PROJECT_NAME || github.repository }}
 
   create-latest-manifest:
     needs: [setup, push-latest-images]
@@ -98,7 +98,7 @@ jobs:
           REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
           REGISTRY_ADDRESS: ${{ vars.REGISTRY_ADDRESS }}
           REGISTRY_USERNAME: ${{ vars.REGISTRY_USERNAME }}
-          PROJECT_NAME: ${{ vars.PROJECT_NAME }}
+          PROJECT_NAME: ${{ vars.PROJECT_NAME || github.repository }}
 
   cleanup-temp-tags:
     needs: [setup, create-latest-manifest]
@@ -125,7 +125,7 @@ jobs:
           REGISTRY: ${{ vars.REGISTRY_ADDRESS }}
           REG_USER: ${{ vars.REGISTRY_USERNAME }}
           REG_PASS: ${{ secrets.REGISTRY_PASSWORD }}
-          PROJECT_NAME: ${{ vars.PROJECT_NAME }}
+          PROJECT_NAME: ${{ vars.PROJECT_NAME || github.repository }}
           SOURCE_IMAGE_TAGS: latest-${{ github.sha }}
           ARCH_SUFFIXES: ${{ needs.setup.outputs.arch_suffixes }}
         run: task cleanup-platform-tags
@@ -224,6 +224,14 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
+      - name: Print release image target
+        run: |
+          echo "REGISTRY_ADDRESS=${{ vars.REGISTRY_ADDRESS }}"
+          echo "REGISTRY_USERNAME=${{ vars.REGISTRY_USERNAME }}"
+          echo "PROJECT_NAME=${{ vars.PROJECT_NAME || github.repository }}"
+          echo "IMAGE_TAG=${{ github.ref_name }}"
+          echo "ARCH=${{ matrix.arch }}"
+
       - name: Publish Release Platform Image
         uses: ./.github/actions/publish-and-sign
         with:
@@ -236,7 +244,7 @@ jobs:
           REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
           REGISTRY_ADDRESS: ${{ vars.REGISTRY_ADDRESS }}
           REGISTRY_USERNAME: ${{ vars.REGISTRY_USERNAME }}
-          PROJECT_NAME: ${{ vars.PROJECT_NAME }}
+          PROJECT_NAME: ${{ vars.PROJECT_NAME || github.repository }}
 
   create-release-manifest:
     needs: [release-setup, publish-release-images]
@@ -263,7 +271,7 @@ jobs:
           REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
           REGISTRY_ADDRESS: ${{ vars.REGISTRY_ADDRESS }}
           REGISTRY_USERNAME: ${{ vars.REGISTRY_USERNAME }}
-          PROJECT_NAME: ${{ vars.PROJECT_NAME }}
+          PROJECT_NAME: ${{ vars.PROJECT_NAME || github.repository }}
 
   cleanup-release-temp-tags:
     needs: [release-setup, create-release-manifest]
@@ -290,7 +298,7 @@ jobs:
           REGISTRY: ${{ vars.REGISTRY_ADDRESS }}
           REG_USER: ${{ vars.REGISTRY_USERNAME }}
           REG_PASS: ${{ secrets.REGISTRY_PASSWORD }}
-          PROJECT_NAME: ${{ vars.PROJECT_NAME }}
+          PROJECT_NAME: ${{ vars.PROJECT_NAME || github.repository }}
           SOURCE_IMAGE_TAGS: ${{ github.ref_name }}
           ARCH_SUFFIXES: ${{ needs.release-setup.outputs.arch_suffixes }}
         run: task cleanup-platform-tags
