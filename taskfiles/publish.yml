@@ -49,7 +49,7 @@ tasks:
     desc: Build and push multi-arch container image
     vars:
       REGISTRY: "{{.REGISTRY | default .Env.REGISTRY}}"
-      PROJECT_NAME: "{{.PROJECT_NAME | default .Env.PROJECT_NAME}}"
+      PROJECT_NAME: "{{.Env.PROJECT_NAME | default .PROJECT_NAME}}"
       COMPONENT: "{{.COMPONENT | default .Env.COMPONENT | default \"satellite\"}}"
       IMAGE_TAGS: "{{.IMAGE_TAGS | default .Env.IMAGE_TAGS | default \"dev\"}}"
       PLATFORMS: "{{.PLATFORMS | default \"linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/riscv64\"}}"
@@ -122,7 +122,7 @@ tasks:
     desc: Build, push, and sign multi-arch container image with Cosign
     vars:
       REGISTRY: "{{.REGISTRY | default .Env.REGISTRY}}"
-      PROJECT_NAME: "{{.PROJECT_NAME | default .Env.PROJECT_NAME}}"
+      PROJECT_NAME: "{{.Env.PROJECT_NAME | default .PROJECT_NAME}}"
       COMPONENT: "{{.COMPONENT | default .Env.COMPONENT | default \"satellite\"}}"
       IMAGE_TAGS: "{{.IMAGE_TAGS | default .Env.IMAGE_TAGS | default \"dev\"}}"
     preconditions:
@@ -154,7 +154,7 @@ tasks:
     desc: Create and sign a multi-arch image manifest from arch-specific tags
     vars:
       REGISTRY: "{{.REGISTRY | default .Env.REGISTRY}}"
-      PROJECT_NAME: "{{.PROJECT_NAME | default .Env.PROJECT_NAME}}"
+      PROJECT_NAME: "{{.Env.PROJECT_NAME | default .PROJECT_NAME}}"
       COMPONENT: "{{.COMPONENT | default .Env.COMPONENT | default \"satellite\"}}"
       IMAGE_TAGS: "{{.IMAGE_TAGS | default .Env.IMAGE_TAGS | default \"dev\"}}"
       SOURCE_IMAGE_TAGS: "{{.SOURCE_IMAGE_TAGS | default .Env.SOURCE_IMAGE_TAGS | default .IMAGE_TAGS | default .Env.IMAGE_TAGS | default \"dev\"}}"
@@ -225,7 +225,7 @@ tasks:
     desc: Delete temporary per-arch source tags from Harbor after manifest assembly
     vars:
       REGISTRY: "{{.REGISTRY | default .Env.REGISTRY}}"
-      PROJECT_NAME: "{{.PROJECT_NAME | default .Env.PROJECT_NAME}}"
+      PROJECT_NAME: "{{.Env.PROJECT_NAME | default .PROJECT_NAME}}"
       SOURCE_IMAGE_TAGS: "{{.SOURCE_IMAGE_TAGS | default .Env.SOURCE_IMAGE_TAGS}}"
       ARCH_SUFFIXES: "{{.ARCH_SUFFIXES | default .Env.ARCH_SUFFIXES}}"
     preconditions:
@@ -276,7 +276,7 @@ tasks:
     desc: Build and push a single-arch image for both components using pre-built binaries
     vars:
       REGISTRY: "{{.REGISTRY | default .Env.REGISTRY}}"
-      PROJECT_NAME: "{{.PROJECT_NAME | default .Env.PROJECT_NAME}}"
+      PROJECT_NAME: "{{.Env.PROJECT_NAME | default .PROJECT_NAME}}"
       IMAGE_TAG: "{{.IMAGE_TAG | default .Env.IMAGE_TAG}}"
       ARCH: "{{.ARCH | default .Env.ARCH}}"
       SATELLITE_BINARY: "{{.SATELLITE_BINARY | default .Env.SATELLITE_BINARY}}"

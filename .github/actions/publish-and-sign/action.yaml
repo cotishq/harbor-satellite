@@ -138,10 +138,46 @@ runs:
 
         for attempt in 1 2 3; do
           case "$PUBLISH_MODE" in
-            platform) publish_cmd=(task publish-platform) ;;
-            manifest) publish_cmd=(task publish-manifest-and-sign) ;;
-            prebuilt) publish_cmd=(task publish-platform-prebuilt) ;;
-            all)      publish_cmd=(task publish-and-sign) ;;
+            platform)
+              publish_cmd=(
+                task publish-platform
+                REGISTRY="$REGISTRY"
+                PROJECT_NAME="$PROJECT_NAME"
+                TAG="$TAG"
+                SOURCE_IMAGE_TAGS="$SOURCE_IMAGE_TAGS"
+                PLATFORM="$PLATFORM"
+                ARCH_SUFFIX="$ARCH_SUFFIX"
+              )
+              ;;
+            manifest)
+              publish_cmd=(
+                task publish-manifest-and-sign
+                REGISTRY="$REGISTRY"
+                PROJECT_NAME="$PROJECT_NAME"
+                TAG="$TAG"
+                SOURCE_IMAGE_TAGS="$SOURCE_IMAGE_TAGS"
+                ARCH_SUFFIXES="$ARCH_SUFFIXES"
+              )
+              ;;
+            prebuilt)
+              publish_cmd=(
+                task publish-platform-prebuilt
+                REGISTRY="$REGISTRY"
+                PROJECT_NAME="$PROJECT_NAME"
+                TAG="$TAG"
+                ARCH="$ARCH"
+                SATELLITE_BINARY="$SATELLITE_BINARY"
+                GC_BINARY="$GC_BINARY"
+              )
+              ;;
+            all)
+              publish_cmd=(
+                task publish-and-sign
+                REGISTRY="$REGISTRY"
+                PROJECT_NAME="$PROJECT_NAME"
+                TAG="$TAG"
+              )
+              ;;
             *)
               echo "Unsupported PUBLISH_MODE: $PUBLISH_MODE" >&2
               exit 2
