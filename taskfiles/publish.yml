@@ -49,7 +49,7 @@ tasks:
     desc: Build and push multi-arch container image
     vars:
       REGISTRY: "{{.REGISTRY | default .Env.REGISTRY}}"
-      PROJECT_NAME: "{{.Env.PROJECT_NAME | default .PROJECT_NAME}}"
+      PROJECT_NAME: "{{.PROJECT_NAME | default .Env.PROJECT_NAME}}"
       COMPONENT: "{{.COMPONENT | default .Env.COMPONENT | default \"satellite\"}}"
       IMAGE_TAGS: "{{.IMAGE_TAGS | default .Env.IMAGE_TAGS | default \"dev\"}}"
       PLATFORMS: "{{.PLATFORMS | default \"linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/riscv64\"}}"
@@ -329,6 +329,7 @@ tasks:
           chmod +x ./prebuilt-binary
           docker buildx build \
             --platform linux/{{.ARCH}} \
+            --build-arg BUILDER_MODE=prebuilt \
             --build-arg PREBUILT_BINARY=./prebuilt-binary \
             --build-arg COMPONENT=$BUILD_COMPONENT \
             -t "$IMAGE_ADDR" \
