@@ -52,10 +52,12 @@ RUN apk add --no-cache ca-certificates tzdata curl
 
 WORKDIR /app
 
-# Copy binary and Ground Control migrations from builder. The migrations copy is
-# harmless for the satellite image and keeps one Dockerfile for both binaries.
+# Copy the binary from whichever builder stage was selected, and migrations
+# from the build context (so the Go build is never forced in prebuilt mode).
 COPY --from=builder /app-bin /app/app
-COPY --from=builder-source /app/internal/groundcontrol/sql/schema /migrations
+# Copy migrations directly from the build context (not from builder-source) so
+# the Go build stage is never forced to run in prebuilt mode.
+COPY internal/groundcontrol/sql/schema /migrations
 
 # Create data directory
 RUN mkdir -p /data
