@@ -4,6 +4,10 @@ on:
   push:
     branches: [main]
     tags:
+      # Tag push protection (restricting who may create v*.*.* tags) must be
+      # enforced via GitHub repository tag-protection rules or rulesets, not
+      # here. Ensure only release administrators have permission to push these
+      # tags in the repository settings.
       - "v*.*.*"
   pull_request:
     paths-ignore:
@@ -175,19 +179,23 @@ jobs:
           repo-token: ${{ github.token }}
 
       - name: Build release binaries
+        env:
+          RELEASE_VERSION: ${{ github.ref_name }}
+          RELEASE_COMMIT: ${{ github.sha }}
+          RELEASE_ARCH: ${{ matrix.arch }}
         run: |
           task _build:cross-compile \
             COMPONENT=satellite \
-            GOARCH=${{ matrix.arch }} \
-            VERSION=${{ github.ref_name }} \
-            GIT_COMMIT=${{ github.sha }} \
-            OUTPUT=bin/release/satellite-linux-${{ matrix.arch }}
+            GOARCH="$RELEASE_ARCH" \
+            VERSION="$RELEASE_VERSION" \
+            GIT_COMMIT="$RELEASE_COMMIT" \
+            OUTPUT=bin/release/satellite-linux-"$RELEASE_ARCH"
           task _build:cross-compile \
             COMPONENT=groundcontrol/server \
-            GOARCH=${{ matrix.arch }} \
-            VERSION=${{ github.ref_name }} \
-            GIT_COMMIT=${{ github.sha }} \
-            OUTPUT=bin/release/ground-control-linux-${{ matrix.arch }}
+            GOARCH="$RELEASE_ARCH" \
+            VERSION="$RELEASE_VERSION" \
+            GIT_COMMIT="$RELEASE_COMMIT" \
+            OUTPUT=bin/release/ground-control-linux-"$RELEASE_ARCH"
 
       - name: Upload release binaries
         uses: actions/upload-artifact@v4

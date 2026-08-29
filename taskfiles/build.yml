@@ -163,11 +163,15 @@ tasks:
       - mkdir -p $(dirname {{.OUTPUT}})
       - |
         echo "Cross-compiling {{.COMPONENT}} for {{.GOOS}}/{{.GOARCH}}..."
+        # Export as env vars so their values are never interpolated into shell
+        # source; the shell expands $VERSION/$GIT_COMMIT safely at runtime.
+        export VERSION={{.VERSION | shellQuote}}
+        export GIT_COMMIT={{.GIT_COMMIT | shellQuote}}
         CGO_ENABLED=0 GOOS={{.GOOS}} GOARCH={{.GOARCH}} go build \
           -trimpath \
           -ldflags "-w -s \
-            -X github.com/container-registry/harbor-satellite/internal/version.GitCommit={{.GIT_COMMIT}} \
-            -X github.com/container-registry/harbor-satellite/internal/version.Version={{.VERSION}}" \
+            -X github.com/container-registry/harbor-satellite/internal/version.GitCommit=$GIT_COMMIT \
+            -X github.com/container-registry/harbor-satellite/internal/version.Version=$VERSION" \
           -o {{.OUTPUT}} \
           ./cmd/{{.COMPONENT}}
         echo "Built {{.OUTPUT}}"
