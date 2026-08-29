@@ -2,6 +2,7 @@ package version_test
 
 import (
 	"testing"
+
 	v "github.com/container-registry/harbor-satellite/internal/version"
 )
 

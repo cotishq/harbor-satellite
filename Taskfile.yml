@@ -166,7 +166,7 @@ tasks:
     vars:
       TAG: '{{.TAG | default .Env.TAG | default "dev"}}'
       REGISTRY: "{{.REGISTRY | default .Env.REGISTRY}}"
-      PROJECT_NAME: "{{.Env.PROJECT_NAME | default .PROJECT_NAME}}"
+      PROJECT_NAME: "{{.PROJECT_NAME | default .Env.PROJECT_NAME}}"
     cmds:
       - task: _publish:image-and-sign
         vars:
@@ -190,7 +190,7 @@ tasks:
         sh: |
           printf '%s' "{{.SOURCE_TAGS}}" | tr ',' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//;s/^v//' | awk 'NF { printf "%s%s-{{.ARCH_SUFFIX}}", sep, $0; sep="," }'
       REGISTRY: "{{.REGISTRY | default .Env.REGISTRY}}"
-      PROJECT_NAME: "{{.Env.PROJECT_NAME | default .PROJECT_NAME}}"
+      PROJECT_NAME: "{{.PROJECT_NAME | default .Env.PROJECT_NAME}}"
       PLATFORM: "{{.PLATFORM | default .Env.PLATFORM}}"
       ARCH_SUFFIX: "{{.ARCH_SUFFIX | default .Env.ARCH_SUFFIX}}"
     preconditions:
@@ -219,7 +219,7 @@ tasks:
     vars:
       TAG: '{{.TAG | default .Env.TAG | default "dev"}}'
       REGISTRY: "{{.REGISTRY | default .Env.REGISTRY}}"
-      PROJECT_NAME: "{{.Env.PROJECT_NAME | default .PROJECT_NAME}}"
+      PROJECT_NAME: "{{.PROJECT_NAME | default .Env.PROJECT_NAME}}"
       ARCH: "{{.ARCH | default .Env.ARCH}}"
       SATELLITE_BINARY: "{{.SATELLITE_BINARY | default .Env.SATELLITE_BINARY}}"
       GC_BINARY: "{{.GC_BINARY | default .Env.GC_BINARY}}"
@@ -239,7 +239,7 @@ tasks:
       TAG: '{{.TAG | default .Env.TAG | default "dev"}}'
       SOURCE_TAGS: "{{.SOURCE_IMAGE_TAGS | default .SOURCE_TAG | default .TAG}}"
       REGISTRY: "{{.REGISTRY | default .Env.REGISTRY}}"
-      PROJECT_NAME: "{{.Env.PROJECT_NAME | default .PROJECT_NAME}}"
+      PROJECT_NAME: "{{.PROJECT_NAME | default .Env.PROJECT_NAME}}"
       ARCH_SUFFIXES: "{{.ARCH_SUFFIXES | default .Env.ARCH_SUFFIXES | default .PLATFORMS_LINUX}}"
     cmds:
       - task: _publish:manifest-and-sign
@@ -263,7 +263,7 @@ tasks:
     desc: Delete temporary per-arch source tags from the registry after manifest assembly
     vars:
       REGISTRY: "{{.REGISTRY | default .Env.REGISTRY}}"
-      PROJECT_NAME: "{{.Env.PROJECT_NAME | default .PROJECT_NAME}}"
+      PROJECT_NAME: "{{.PROJECT_NAME | default .Env.PROJECT_NAME}}"
       SOURCE_TAGS: "{{.SOURCE_IMAGE_TAGS | default .Env.SOURCE_IMAGE_TAGS}}"
       ARCH_SUFFIXES: "{{.ARCH_SUFFIXES | default .Env.ARCH_SUFFIXES}}"
     cmds:
