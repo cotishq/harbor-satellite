@@ -43,6 +43,10 @@ RUN CGO_ENABLED=0 GOOS=linux go build -tags "${GO_TAGS}" -o /app-bin ./cmd/${COM
 # BUILDER_MODE is declared globally above (before the first FROM) so Docker
 # can evaluate it here. Defaults to 'source'; pass --build-arg BUILDER_MODE=prebuilt
 # to select the lightweight prebuilt stage.
+#
+# DL3006 does not apply: this FROM names a prior stage (builder-source or
+# builder-prebuilt), not an untagged registry image.
+# hadolint ignore=DL3006
 FROM builder-${BUILDER_MODE} AS builder
 
 # ── Runtime stage ─────────────────────────────────────────────────────────────
