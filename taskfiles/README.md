@@ -48,11 +48,24 @@ task e2e
 
 | Command | Description |
 |---------|-------------|
-| `task publish DEST=registry/project` | Publish both components to registry |
+| `task publish DEST=registry/project` | Publish both components to registry (from-source image build) |
 | `task snapshot` | Create snapshot release with GoReleaser |
 | `task release` | Create official release |
 
-### Examples
+CI publishing is **not** these Task recipes. `.github/workflows/release.yaml` always:
+
+1. Cross-compiles `satellite` and `ground-control` per architecture (`task _build:cross-compile`)
+2. Builds and pushes each image by digest (`BUILDER_MODE=prebuilt`)
+3. Merges the five digests into one multi-arch tag
+4. Signs the tagged images with keyless cosign
+
+Tagging:
+
+- Push to `main` publishes `satellite:latest` and `ground-control:latest`
+- A `vX.Y.Z` tag publishes version tags only and does **not** move `latest`
+- `vX.Y.Z` also runs GoReleaser for GitHub Release binaries
+
+### Local examples
 
 ```bash
 # Publish to ttl.sh (anonymous registry, no auth needed)
